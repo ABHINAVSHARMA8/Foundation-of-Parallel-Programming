@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
     else {
         int x, y;
         // stamp API to execute two tasks (C++11 lambda) in parallel
-        execute_tuple([&]() { x=fib(n-1); }, [&]() { y=fib(n-2); } );
+        stamp::execute_tuple([&]() { x=fib(n-1); }, [&]() { y=fib(n-2); } );
         result = x + y;
     }
     printf("Fib of %d = %d\n",n, result);

@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     }
   }  
   // start the parallel multiplication of two matrices
-  parallel_for(size,size ,[&](int i, int j) {
+  stamp::parallel_for(size,size ,[&](int i, int j) {
     for(int k=0; k<size; k++) {
       C[i][j] += A[i][k] * B[k][j];
     }

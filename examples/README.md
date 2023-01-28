@@ -1,7 +1,3 @@
-TODO: 
- Fix stamp namespace
- add statistics
-
 
 To generate exectuables of CPP programs,follows the below listed steps:
 
