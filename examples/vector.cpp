@@ -15,10 +15,10 @@ int main(int argc, char** argv) {
   std::fill(C, C+size, 0);
   // start the timer
   // start the parallel addition of two vectors
-  parallel_for(0, size, 1, [&](int i) {
-   // std::cout<<i<<"USer"<<std::endl;
+  parallel_for(0, size,1, [&](int i) {
+   
     C[i] = A[i] + B[i];
-    //std::cout<<i<<std::endl;
+   
   }, numThread);
   // end the timer
   // verify the result vector

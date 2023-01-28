@@ -5,8 +5,10 @@
 #include<algorithm>
 #include<iostream>
 #include<vector>
+#include<utility>
 
 static std::vector<int> a;
+static std::vector<std::pair<int,int>> b;
 
 typedef struct{
     std::function<void()> fptr;
@@ -18,6 +20,12 @@ typedef struct{
     int end;
     
 }parallel_for_1_t;
+
+typedef struct{
+    std::function<void(int,int)> fptr;
+    int count;
+    int ptr;
+}parallel_for_2_t;
 
 
 void execute_tuple(std::function<void()> &&lambda1,std::function<void()> &&lambda2);
