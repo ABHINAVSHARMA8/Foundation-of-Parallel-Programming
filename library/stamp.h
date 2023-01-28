@@ -4,8 +4,20 @@
 #include<functional>
 #include<algorithm>
 #include<iostream>
+#include<vector>
 
+static std::vector<int> a;
 
+typedef struct{
+    std::function<void()> fptr;
+}et;
+
+typedef struct{
+    std::function<void(int)> fptr;
+    int start;
+    int end;
+    
+}parallel_for_1_t;
 
 
 void execute_tuple(std::function<void()> &&lambda1,std::function<void()> &&lambda2);

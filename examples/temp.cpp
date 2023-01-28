@@ -1,4 +1,4 @@
-#include "../library/stamp.h"
+#include "stamp.h"
 #include<stdio.h>
 #include<iostream>
 int main(){
