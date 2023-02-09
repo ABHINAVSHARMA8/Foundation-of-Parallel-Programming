@@ -3,7 +3,8 @@ CPPTARGETS=$(patsubst %.cpp,%,$(SRCCPP))
 default:	$(CPPTARGETS)
 
 %: %.cpp
-	g++ -std=c++11 -pthread -I.   -o $*.out 
+	export DY_LD_LIBRARY=.
+	g++ -std=c++11 -lpthread -I.   -o $*.out 
 
 format:
 	clang-format -i *.c
