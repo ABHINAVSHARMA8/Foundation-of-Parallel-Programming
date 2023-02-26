@@ -1,6 +1,7 @@
 #ifndef QUILL_H
 #define QUILL_H
 #include<string>
+#include<functional>
 
 namespace quill{
 
