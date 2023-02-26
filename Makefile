@@ -1,18 +1,23 @@
+GCC=g++
+CFLAGS=-std=c++11
+LFLAGS=-lpthread
 
+all:	quill-runtime.o nqueens.o
+	$(GCC) $(CFLAGS) quill-runtime.o nqueens.o -o nqueens $(LFLAGS)
 
-all:
-	g++ -std=c++11 -c quill-runtime.cpp
-	g++ -std=c++11 -c nqueens.cpp
-	g++ -std=c++11 quill-runtime.o nqueens.o -o nqueens -lpthread
-	
+quill-runtime.o:
+	$(GCC) $(CFLAGS)  -c quill-runtime.cpp
+
+nqueens.o:
+	$(GCC) $(CFLAGS) -c nqueens.cpp
+
 format:
 	clang-format -i *.c
 	clang-format -i *.cpp
 
 clean:
 	rm nqueens
-	rm quill-runtime.o
-	rm nqueens.o
-	rm test.o
-	rm test
+	rm *.o
+	
+	
 
