@@ -47,7 +47,7 @@
 #include "quill.h"
 #include <sys/time.h>
 #include<iostream>
-
+#include <cstring>
 
 // Solutions for different board sizes
 int solutions[16] =
