@@ -10,7 +10,7 @@
 #include<string>
 #include<cstring>
 #include<vector>
-
+#include <functional>
 
 
 namespace quill{
