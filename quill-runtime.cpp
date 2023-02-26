@@ -146,7 +146,7 @@ void push_to_tail(Task p,int rank){
         }
     }
 
-    catch(..){
+    catch(...){
         std::cout<<"Deque overflow"<<std::endl;
         exit(0);
     }
