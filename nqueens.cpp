@@ -46,6 +46,8 @@
 
 #include "quill.h"
 #include <sys/time.h>
+#include<iostream>
+
 
 // Solutions for different board sizes
 int solutions[16] =
@@ -101,6 +103,7 @@ void nqueens_kernel(int* A, int depth, int size) {
       memcpy(B, A, sizeof(int)*depth);
       B[depth] = i;
       int failed = ok((depth +  1), B); 
+     // std::cout<<"NQUEENS"<<std::endl;
       if (!failed) {
 	quill::async([=]() {
           nqueens_kernel(B, depth+1, size);
@@ -147,9 +150,11 @@ int main(int argc, char* argv[])
   long end = get_usecs();
   dur = ((double)(end-start))/1000000;
   verify_queens(n);  
+ 
   free((void*)atomic);
   printf("NQueens(%d) Time = %fsec\n",n,dur);
 
   quill::finalize_runtime();
+  
   return 0;
 }

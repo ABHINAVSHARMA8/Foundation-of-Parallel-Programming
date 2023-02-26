@@ -1,3 +1,7 @@
+#ifndef QUILL_H
+#define QUILL_H
+#include<string>
+
 namespace quill{
 
     void init_runtime();
@@ -6,3 +10,5 @@ namespace quill{
     void end_finish();
     void finalize_runtime();
 }
+
+#endif

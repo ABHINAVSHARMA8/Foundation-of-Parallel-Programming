@@ -1,5 +1,4 @@
 TODO:
-1.Check insertion in async
-2.pthread_key
-3.Boundary  case in push and pop operations
-4.Structure of dequeu(circular array ?)
+1.Check insertion in async through pthread_key
+2.Lock in pop operation
+3.Problem in worker_routine funcion,most likely pthread_key
