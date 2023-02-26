@@ -3,14 +3,14 @@
 
 #include "quill.h"
 #include<pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include<stdio.h>
+#include<stdlib.h>
 #include<assert.h>
 #include<iostream>
 #include<string>
 #include<cstring>
 #include<vector>
-#include <functional>
+#include<functional>
 
 
 namespace quill{
