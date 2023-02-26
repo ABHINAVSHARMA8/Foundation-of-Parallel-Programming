@@ -1,8 +1,6 @@
-
 #include "quill-runtime.h"
 
 namespace quill{
-
 
 void init_runtime(){
      
@@ -15,208 +13,124 @@ void init_runtime(){
     if (workers <= 0)
         workers = 1;
 
-    
-
     deques=(Deque_t *)(malloc(sizeof(Deque_t)*workers));
     params=(param_t *)(malloc(sizeof(param_t)*(workers-1)));
     threads=(pthread_t *)(malloc(sizeof(pthread_t)*(workers-1)));
     for(int i=0;i<workers;i++) 
         deque_init(i);
-     
     
- 
     for(int i=1;i<workers;i++)
-     
-        
         params[i]={i};
-    
-    
-
-    // for(int i=0;i<workers;i++) std::cout<<" "<<deques[i].queue<<std::endl;
     
     pthread_key_create(&key,NULL);
     pthread_mutex_init(&lock,NULL);
 
-    
-    
-    
-
-    for(int i=1;i<workers;i++) {
-       
-        
+    for(int i=1;i<workers;i++) 
         pthread_create(&threads[i],NULL,worker_routine,(void *)&params[i]);
-    }
     
-   
-  // for(int i=0;i<workers;i++) std::cout<<&deques[i].lock<<std::endl;
-    
-
 }
 
-/*void param_init(param_t p,int i){
-    param_t *param=&p;
-  //  param=&p;
-    param->id=i;
-    
-}*/
 
 void start_finish(){
-    task_counter=0;
-     
-    
-
-    
+    task_counter=0;   
 }
 
 void async(Task &&lambda){
    
-   
     int rank=thread_id(); 
-    //std::cout<<"async "<<rank<<std::endl;
     pthread_mutex_lock(&lock);
     task_counter+=1;
     pthread_mutex_unlock(&lock);
-   
-    push_to_tail(lambda,rank);  
-    
-    
-    
+    push_to_tail(lambda,rank);      
 }
 
 void end_finish(){
 
-    
     int id=thread_id();
      
-    
     while(task_counter!=0){
-       
         Task t=find_and_execute_task(id);//get ffrom TLS
          
         if(t!=NULL){
             t();
-         // std::cout<<"end finish "<<id<<std::endl;
-         
             pthread_mutex_lock(&lock);
             task_counter-=1;
             pthread_mutex_unlock(&lock);
-            
-
         }
 
-       // else  std::cout<<"end finish "<<task_counter<<std::endl;
-        
-    
-
     }
-     
-
 }
-
 
 void finalize_runtime(){
 
-   
     shutdown=1;
-   
     for(int i=1;i<workers;i++) pthread_join(threads[i],NULL);
-    
     for(int i=0;i<workers;i++) deque_destroy(i);
     
     pthread_mutex_destroy(&lock);
     pthread_key_delete(key);
     free(deques);
     free(threads);
-    free(params);
-   
-    
+    free(params);  
 }
 
 void *worker_routine(void *args){
 
     pthread_setspecific(key,args);
-    
     int id=((param_t *)args)->id;
     
-   // std::cout<<id<<std::endl;
-    
     while(!shutdown){
-       
         Task t=find_and_execute_task(id);
-       
+
         if(t!=NULL){
-          
             t();
-            
             pthread_mutex_lock(&lock);
             task_counter-=1;
             pthread_mutex_unlock(&lock);
-           
         }
-        
-       //if(shutdown==1) break;
-
     }
 
-    
     return nullptr;
 }
 
 Task find_and_execute_task(int rank){
 
-    
-    
     Task t=(pop_from_tail(rank));
    
-    if(t!=NULL){
-        
+    if(t!=NULL)
         return t;
-        
-    }
         
     else{
         
         int victim=rand()%workers;
-       
         Task t=pop_from_head(victim);
        
-       //std::cout<<"End "<<task_counter<<std::endl;
         return t;
     }
-    
-
 }
 
 bool isFull(int rank){
-   // Deque_t *deque=&pool;
+  
     bool ans= ((deques[rank].head == 0 && deques[rank].tail == deque_size - 1) || deques[rank].head == deques[rank].tail + 1);
-    
     return ans;
 }
 
 bool isEmpty(int rank){
-  // Deque_t *deque=&pool;
+  
     bool ans= (deques[rank].head==-1);
-    
     return ans;
 }
 
 void deque_init(int i){
-    
-     
+
     pthread_mutex_init(&(deques[i].lock), 0);
     deques[i].head=-1;
     deques[i].tail=0;
     
-    //std::cout<<"!"<<std::endl;
-    
-    
 }
 
 void deque_destroy(int rank){
-    
     pthread_mutex_destroy(&deques[rank].lock);
-    
 }
     
     
@@ -224,55 +138,39 @@ void deque_destroy(int rank){
 
 void push_to_tail(Task p,int rank){
     
-    //if(p==NULL) return;
-   
-   //std::cout<<pool.head<<" "<<pool.tail<<" "<<task_counter<<std::endl;
     if(isFull(rank)) {
       std::cout<<"\n insertion is not possible, overflow!!!!"<<std::endl;
       exit(0);
     }
     
    else{
-         
 
         if(isEmpty(rank)){
             deques[rank].head=0;
-            deques[rank].tail=0;
-            
+            deques[rank].tail=0;   
         }
+
         else if(deques[rank].tail==deque_size-1) deques[rank].tail=0;
 
-        
-        else{
-            
+        else
             deques[rank].tail+=1;
-        }
-
-        deques[rank].queue[deques[rank].tail]=p;
-    
-      
-   }
-
-  
-   
+        
+        deques[rank].queue[deques[rank].tail]=p;   
+   }   
 }
 
 Task pop_from_head(int rank){
    
     pthread_mutex_lock(&deques[rank].lock);
     
-
-
     if(isEmpty(rank)){
       pthread_mutex_unlock(&deques[rank].lock);
-      
       return NULL;
     }
     
     Task t=deques[rank].queue[deques[rank].head];
-    
+
     if(deques[rank].head==deques[rank].tail){
-        
         deques[rank].head=-1;
         deques[rank].tail=-1;
     }
@@ -285,35 +183,23 @@ Task pop_from_head(int rank){
 
     pthread_mutex_unlock(&deques[rank].lock);
      
-
-   
     return t;
-    
-
-    
+   
 }
 
 Task pop_from_tail(int rank){
    
-    if(isEmpty(rank)) {
-      
+    if(isEmpty(rank)) 
       return NULL;
-    }
     
-    
-   
-
-   
+  
    if(deques[rank].head==deques[rank].tail){
     
         pthread_mutex_lock(&deques[rank].lock);
-       
         Task t=deques[rank].queue[deques[rank].tail];
-        
         deques[rank].head=-1;
         deques[rank].tail=-1;
         pthread_mutex_unlock(&deques[rank].lock);
-        
         return t;
     }
 
@@ -326,18 +212,13 @@ Task pop_from_tail(int rank){
     else
         deques[rank].tail=deques[rank].tail-1;
 
-   
-
-    
     return t;
-
 
 }
 
 int thread_id(){
 
     void *p=pthread_getspecific(key);
-
     if(p==NULL) {return 0;}
     
     return *((int *)p);
