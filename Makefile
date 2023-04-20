@@ -3,7 +3,8 @@ EXE=iterative_averaging
 all:	$(EXE)
 
 iterative_averaging:	iterative_averaging.cpp
-	g++ -std=c++11 -o iterative_averaging iterative_averaging.cpp -fopenmp
+	mpicxx -g -o $@ $^ -fopenmp
+	mpirun -np 4 iterative_averaging
 
 clean:
 	rm -r $(EXE)
