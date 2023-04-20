@@ -59,7 +59,7 @@ void recurse(uint64_t low, uint64_t high) {
       a[high-1]=(shadow[high-2]+second)/2.0;
       
       a[low]=(first+shadow[low+1])/2.0;
-      #pragma parallel for num_threads(threads)
+      #pragma parallel for num_threads(threads) default(none) shared(a,shadow) firsprivate(low,high)
       for(uint64_t j=low+1; j<high-1; j++) {
         a[j] = (shadow[j - 1] + shadow[j + 1]) / 2.0;
       }
