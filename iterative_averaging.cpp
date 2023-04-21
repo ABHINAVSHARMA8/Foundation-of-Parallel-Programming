@@ -82,9 +82,6 @@ int main(int argc, char** argv) {
   n=atoi(argv[1]);
   ni=atoi(argv[2]);
   
-  
-
-  
 
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
