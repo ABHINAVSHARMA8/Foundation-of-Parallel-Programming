@@ -1,4 +1,4 @@
-EXE= iterative_averaging mat_mul
+EXE=  mat_mul #iterative_averaging
 
 all:	$(EXE)
 

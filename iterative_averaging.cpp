@@ -118,13 +118,16 @@ int main(int argc, char** argv) {
       sum+=temp;
     }
     cout<<"Sum is "<<sum<<endl;
-  }
+  
   
   //for(int i=2;i<n+1;i++) assert(a[i]==a[i-1]);
   
   
   double dur = ((double)(e-s))/1000000;
   printf("Time = %.3f\n",dur);
+  }
   delete(a);
   delete(shadow);
+  MPI_Finalize();
+  return 0;
 }

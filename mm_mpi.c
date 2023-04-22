@@ -8,7 +8,7 @@
 #include<stdlib.h>
 #include <sys/time.h>
 #include<mpi.h>
-
+#include <assert.h>
 double **a, **b, **c;
 int id,np;
 
@@ -41,6 +41,13 @@ void freeall(int n) {
   free(c);
 }
 
+double** init(double **x,int n){
+  x=(double **)malloc(sizeof(double*)*n);
+  for(int i=0; i<n; i++) 
+    x[i] = (double*)malloc(sizeof(double)*n);
+  return x;
+}
+
 /*
  * Validate the result of matrix multiplication
  */
@@ -57,6 +64,7 @@ int verify(int n) {
 }
 
 void multiply(int n) {
+  
   int start=(n/np)*id;
   int end=start + (n/np);
   if(id==np-1) end=n;
@@ -64,9 +72,11 @@ void multiply(int n) {
     for(int j=0; j<n; j++) {
       for(int k=0; k<n; k++) {
         c[i][j] += a[i][k] * b[k][j];
+        //printf("%f\n",a[i][k]*b[k][j]);
       }
     }    
   }
+  
 }
 
 int main(int argc, char** argv) {
@@ -75,38 +85,44 @@ int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
   MPI_Comm_size(MPI_COMM_WORLD, &np);
+  
+  
   // initialize
   //init(n);
-  a[n][n];
-  b[n][n];
-  c[n][n];
-  /*
-  for(int i=0; i<n; i++) {
-    a[i] = new double[n];
-    b[i] = new double[n];
-    c[i] = new double[n];
-  }
-  */
+  
+  a=init(a,n);
+  b=init(b,n);
+  c=init(c,n);
+  assert(a!=NULL);
   if(id==0){
+    
     for(int i=0; i<n; i++) {
+       
         for(int j=0; j<n; j++) {
-            a[i][j] = 1.0;  
-            b[i][j] = 1.0;  
-            c[i][j] = 0;
+         //printf("Init\n");
+          a[i][j] = 1.0;  
+          b[i][j] = 1.0;  
+          c[i][j] = 0;
         }    
     }
-
-    MPI_Bcast(&a,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
-    MPI_Bcast(&b,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
-    MPI_Bcast(&c,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
+   
   }
 
-  else{
-    MPI_Bcast(&a,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
-    MPI_Bcast(&b,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
-    MPI_Bcast(&c,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
-
-  }
+  MPI_Barrier(MPI_COMM_WORLD);
+  //printf("%d b\n",id);
+  MPI_Bcast(a,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
+  printf("%d\n",id);
+  MPI_Barrier(MPI_COMM_WORLD);
+  //printf("112\n");
+  MPI_Bcast(b,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
+  //MPI_Barrier(MPI_COMM_WORLD);
+ //printf("115\n");
+  MPI_Bcast(c,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
+  //printf("117\n");
+  
+  
+  
+  
     
   //start timer
   long start = get_usecs();
@@ -117,16 +133,21 @@ int main(int argc, char** argv) {
   double dur = ((double)(end-start))/1000000;
   if(id>0){
     
-    MPI_Send(&c,n*n,MPI_DOUBLE,0,1,MPI_COMM_WORLD);
+    MPI_Send(&c[0][0],n*n,MPI_DOUBLE,0,1,MPI_COMM_WORLD);
+    //printf("%d\n",id);
   }
   else{
     MPI_Status stats;
-    double temp[n][n];
+    double **temp;
+    temp=init(temp,n);
+    
     for(int i=1;i<np;i++){
-        MPI_Recv(&temp,n*n,MPI_DOUBLE,i,1,MPI_COMM_WORLD,&stats);
+        MPI_Recv(&temp[0][0],n*n,MPI_DOUBLE,i,1,MPI_COMM_WORLD,&stats);
+        
         for(int j=0;j<n;j++){
-            for(int k=0;j<n;k++){
+            for(int k=0;k<n;k++){
                 if(temp[j][k]!=0){
+                  printf("%f\n",temp[j][k]);
                     c[j][k]=temp[j][k];
                 }
             }
@@ -134,12 +155,14 @@ int main(int argc, char** argv) {
     }
     
 
-  }
+  
   //validate result
   int result = verify(n);
   
   printf("MatrixMultiplication result = %d, Time = %.3f\n",result, dur);
+  }
   //release memory
   freeall(n);
+  MPI_Finalize();
   return 0;
 }
