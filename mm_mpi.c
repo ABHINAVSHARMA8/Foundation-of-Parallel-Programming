@@ -3,7 +3,7 @@
  * Author: Vivek Kumar
  */
 
-#include<iostream>
+
 #include<stdio.h>
 #include<stdlib.h>
 #include <sys/time.h>
@@ -29,14 +29,16 @@ long get_usecs (void) {
  * release memory
  */
 void freeall(int n) {
+  /*
   for(int i=0; i<n; i++) {
     delete(a[i]);
     delete(b[i]);
     delete(c[i]);
   }
-  delete (a);
-  delete (b);
-  delete (c);
+  */
+  free(a);
+  free(b);
+  free(c);
 }
 
 /*
@@ -47,11 +49,11 @@ int verify(int n) {
     for(int j=0; j<n; j++) {
       if(c[i][j] != n) {
         printf("result = %.3f\n",c[i][j]);
-        return false;
+        return 0;
       }
     }
   }
-  return true;
+  return 1;
 }
 
 void multiply(int n) {
@@ -75,14 +77,16 @@ int main(int argc, char** argv) {
   MPI_Comm_size(MPI_COMM_WORLD, &np);
   // initialize
   //init(n);
-  a = new double*[n];
-  b = new double*[n];
-  c = new double*[n];
+  a[n][n];
+  b[n][n];
+  c[n][n];
+  /*
   for(int i=0; i<n; i++) {
     a[i] = new double[n];
     b[i] = new double[n];
     c[i] = new double[n];
   }
+  */
   if(id==0){
     for(int i=0; i<n; i++) {
         for(int j=0; j<n; j++) {
@@ -92,15 +96,15 @@ int main(int argc, char** argv) {
         }    
     }
 
-    MPI_Bcast(&a,n*n,MPI_Double,0,MPI_COMM_WORLD);
-    MPI_Bcast(&b,n*n,MPI_Double,0,MPI_COMM_WORLD);
-    MPI_Bcast(&c,n*n,MPI_Double,0,MPI_COMM_WORLD);
+    MPI_Bcast(&a,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
+    MPI_Bcast(&b,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
+    MPI_Bcast(&c,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
   }
 
   else{
-    MPI_Bcast(&a,n*n,MPI_Double,0,MPI_COMM_WORLD);
-    MPI_Bcast(&b,n*n,MPI_Double,0,MPI_COMM_WORLD);
-    MPI_Bcast(&c,n*n,MPI_Double,0,MPI_COMM_WORLD);
+    MPI_Bcast(&a,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
+    MPI_Bcast(&b,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
+    MPI_Bcast(&c,n*n,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
   }
     
@@ -113,15 +117,15 @@ int main(int argc, char** argv) {
   double dur = ((double)(end-start))/1000000;
   if(id>0){
     
-    MPI_Send(&c,n*n,MPI_Double,0,1,MPI_COMM_WORLD);
+    MPI_Send(&c,n*n,MPI_DOUBLE,0,1,MPI_COMM_WORLD);
   }
   else{
     MPI_Status stats;
-    double **temp=new double*[n];
+    double temp[n][n];
     for(int i=1;i<np;i++){
-        MPI_Recv(&temp,n*n,MPI_Double,i,1,MPI_COMM_WORLD,&stats);
+        MPI_Recv(&temp,n*n,MPI_DOUBLE,i,1,MPI_COMM_WORLD,&stats);
         for(int j=0;j<n;j++){
-            for(k=0;j<n;k++){
+            for(int k=0;j<n;k++){
                 if(temp[j][k]!=0){
                     c[j][k]=temp[j][k];
                 }
@@ -133,7 +137,7 @@ int main(int argc, char** argv) {
   }
   //validate result
   int result = verify(n);
-  if
+  
   printf("MatrixMultiplication result = %d, Time = %.3f\n",result, dur);
   //release memory
   freeall(n);

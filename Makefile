@@ -1,14 +1,14 @@
-EXE=iterative_averaging mat_mul
+EXE= iterative_averaging mat_mul
 
 all:	$(EXE)
 
 iterative_averaging:	iterative_averaging.cpp
 	mpicxx -g -o $@ $^ -fopenmp
-	mpirun -np 4 iterative_averaging
+	mpirun -n 4 ./iterative_averaging 10000000 64 4
 
-mat_mul:	mat_mul.c
+mat_mul:	mm_mpi.c
 	mpicc -g -o $@ $^ 
-	mpirun -np 4 mat_mul
+	mpirun -n 4 ./mat_mul
 
 clean:
 	rm -r $(EXE)
