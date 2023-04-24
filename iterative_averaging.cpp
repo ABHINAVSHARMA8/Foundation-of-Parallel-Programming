@@ -95,11 +95,12 @@ int main(int argc, char** argv) {
     a[i]=i;
     shadow[i]=i;
   }
+  shadow[0]=0;
   shadow[n + 1] = 1.0;
   long s = get_usecs();
   runParallel(start,end);
   long e = get_usecs();
-  int sum=0;
+  double sum=0;
   
   for(int i=start;i<end;i++) sum+=a[i];
   MPI_Status stats;
@@ -108,7 +109,7 @@ int main(int argc, char** argv) {
   }
 
   if(id==0){
-    int temp;
+    double temp;
     for(int i=1;i<np;i++){ //root process receives sum from non-root processes
       MPI_Recv(&temp,1,MPI_DOUBLE,i,1,MPI_COMM_WORLD,&stats);
       sum+=temp;
