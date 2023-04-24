@@ -87,8 +87,14 @@ int main(int argc, char** argv) {
 
   a = new double[(n + 2)];
   shadow = new double[(n + 2)];
+  /*
   memset(a, 0, sizeof(double) * (n + 2));
   memset(shadow, 0, sizeof(double) * (n + 2));
+  */
+  for(int i=1;i<n+1;i++){
+    a[i]=i;
+    shadow[i]=i;
+  }
   shadow[n + 1] = 1.0;
   long s = get_usecs();
   runParallel(start,end);
