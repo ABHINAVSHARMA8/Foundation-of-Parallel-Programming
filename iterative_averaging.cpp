@@ -9,18 +9,10 @@
 #include<omp.h>
 using namespace std;
 
-/*
- * Ported from HJlib
- *
- * Author: Vivek Kumar
- *
- */
-
-//48 * 256 * 2048
 int n,ni,threads,id, np;
 double *a, *shadow;
 
-
+//timer routine
 long get_usecs () {
   struct timeval t;
   gettimeofday(&t,NULL);
@@ -41,11 +33,12 @@ void recurse(uint64_t low, uint64_t high) {
   if((high - low) > 512) {
     //THRESHOLD
     uint64_t mid = (high+low)/2;
-    /* An async task */ recurse(low, mid);  
+    recurse(low, mid);  
     recurse(mid, high);
   } else {
       MPI_Status stats;
-      if(id!=0)
+      //exchange boundary elements
+      if(id!=0) 
         MPI_Send(&shadow[low],1,MPI_DOUBLE,id-1,1,MPI_COMM_WORLD);
       if(id!=np-1)
         MPI_Send(&shadow[high-1],1,MPI_DOUBLE,id+1,1,MPI_COMM_WORLD);
@@ -57,18 +50,16 @@ void recurse(uint64_t low, uint64_t high) {
          MPI_Recv(&second,1,MPI_DOUBLE,id+1,1,MPI_COMM_WORLD,&stats);//shadow[high]
       
       a[high-1]=(shadow[high-2]+second)/2.0;
-      
       a[low]=(first+shadow[low+1])/2.0;
+      //perform averaging in a multithreaded manner
       #pragma parallel for num_threads(threads) default(none) shared(a,shadow) firsprivate(low,high)
       for(uint64_t j=low+1; j<high-1; j++) {
         a[j] = (shadow[j - 1] + shadow[j + 1]) / 2.0;
       }
-
-
-      
   }
 }
 
+//to run iterations
 void runParallel(int start,int end) {
   for(int i=0; i<ni; i++) {
     recurse(start,end);
@@ -82,14 +73,13 @@ int main(int argc, char** argv) {
   n=atoi(argv[1]);
   ni=atoi(argv[2]);
   
-
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
   MPI_Comm_size(MPI_COMM_WORLD, &np);
-  cout<<id<<" "<<np<<endl;
+  
   if(np==2) threads=2;
   else threads=1;
-
+  //perform chunking
   int start=(n/np)*id,end=start + (n/np);
   if(id==np-1) end=n+1;
   if(id==0) start=1;
@@ -107,27 +97,24 @@ int main(int argc, char** argv) {
   
   for(int i=start;i<end;i++) sum+=a[i];
   MPI_Status stats;
-  if(id>0){
+  if(id>0){ //send sum to root process
     MPI_Send(&sum,1,MPI_DOUBLE,0,1,MPI_COMM_WORLD);
   }
 
   if(id==0){
     int temp;
-    for(int i=1;i<np;i++){
+    for(int i=1;i<np;i++){ //root process receives sum from non-root processes
       MPI_Recv(&temp,1,MPI_DOUBLE,i,1,MPI_COMM_WORLD,&stats);
       sum+=temp;
     }
     cout<<"Sum is "<<sum<<endl;
-  
-  
-  //for(int i=2;i<n+1;i++) assert(a[i]==a[i-1]);
-  
-  
-  double dur = ((double)(e-s))/1000000;
-  printf("Time = %.3f\n",dur);
+    double dur = ((double)(e-s))/1000000;
+    printf("Time = %.3f\n",dur);
   }
+  //free memory
   delete(a);
   delete(shadow);
+
   MPI_Finalize();
   return 0;
 }
